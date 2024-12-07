@@ -30,7 +30,7 @@ const History = () => {
     const fetchProjects = async () => {
       try {
         // Update fetch to handle potential JSON parsing errors
-        const response = await fetch("https://a9labsapi-1048667232204.us-central1.run.app/projects/completed", { 
+        const response = await fetch("https://a9labsapi-13747549899.us-central1.run.app/projects/completed", { 
           method: "POST",
           headers: {
             'Accept': 'application/json',

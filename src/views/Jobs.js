@@ -61,7 +61,7 @@ const Jobs = () => {
     formDataToSend.append("file", formData.dataset);
   
     try {
-      const response = await fetch("https://a9labsapi-1048667232204.us-central1.run.app/jobs/create", {
+      const response = await fetch("https://a9labsapi-13747549899.us-central1.run.app/jobs/create", {
         method: "POST",
         body: formDataToSend,
       });
