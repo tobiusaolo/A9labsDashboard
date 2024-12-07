@@ -59,8 +59,20 @@ const Dashboard = () => {
   const [sortColumn, setSortColumn] = useState("");
 
   useEffect(() => {
+    // Initial fetch when component mounts
     dispatch(fetchActiveProjects());
-  }, [dispatch]);
+
+    // Set up an interval to refresh the active projects every 60 seconds
+    const intervalId = setInterval(() => {
+      dispatch(fetchActiveProjects());
+      if (selectedProject) {
+        dispatch(fetchPlotData(selectedProject));
+      }
+    }, 60000); // 60 seconds
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [dispatch, selectedProject]);
 
   useEffect(() => {
     if (selectedProject) {
@@ -119,7 +131,7 @@ const Dashboard = () => {
         {/* Left Section (Graphs - 75%) */}
         <Grid item xs={12} md={9}>
           <Box sx={{ backgroundColor: "#1E1E1E", p: 2, borderRadius: 2 }}>
-            <Typography variant="h5" gutterBottom sx={{fontSize:"16px", mb:8}}>
+            <Typography variant="h5" gutterBottom sx={{ fontSize: "16px", mb: 8 }}>
               Training Project: {selectedProject || "None"}
             </Typography>
             <Box
@@ -140,7 +152,7 @@ const Dashboard = () => {
                     height: "320px",
                   }}
                 >
-                  <Typography variant="h6" sx={{ mb: 1, fontSize:"12px" }}>
+                  <Typography variant="h6" sx={{ mb: 1, fontSize: "12px" }}>
                     {metric.toUpperCase()} - {metric === "loss" ? "Training Loss Over Steps" : "Metric Over Steps"}
                   </Typography>
                   {loading.plots && (
@@ -212,7 +224,7 @@ const Dashboard = () => {
                 onChange={(e) => setProjectSearch(e.target.value)}
               />
             </Box>
-            <Typography variant="h6" gutterBottom sx={{fontSize:"12px"}}>
+            <Typography variant="h6" gutterBottom sx={{ fontSize: "12px" }}>
               Current Running Projects
             </Typography>
             <TableContainer
@@ -227,8 +239,8 @@ const Dashboard = () => {
               <Table stickyHeader>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ color: "#4CAF50", width: "60%",fontSize:"12px" }}>Project Name</TableCell>
-                    <TableCell sx={{ color: "#4CAF50", width: "40%",fontSize:"12px" }}>Action</TableCell>
+                    <TableCell sx={{ color: "#4CAF50", width: "60%", fontSize: "12px" }}>Project Name</TableCell>
+                    <TableCell sx={{ color: "#4CAF50", width: "40%", fontSize: "12px" }}>Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -246,7 +258,7 @@ const Dashboard = () => {
                           overflow: "hidden",
                           textOverflow: "ellipsis",
                           whiteSpace: "nowrap",
-                          fontSize:"12px"
+                          fontSize: "12px",
                         }}
                       >
                         {project.name}
@@ -279,7 +291,9 @@ const Dashboard = () => {
                 mb: 2,
               }}
             >
-              <Typography variant="h6" sx={{fontSize:"12px"}}>Leaderboard</Typography>
+              <Typography variant="h6" sx={{ fontSize: "12px" }}>
+                Leaderboard
+              </Typography>
               <IconButton
                 onClick={() => setLeaderboardExpanded((prev) => !prev)}
                 sx={{ color: "#FFFFFF" }}
@@ -300,22 +314,20 @@ const Dashboard = () => {
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
-                    <TableCell
-                        sx={{ color: "#4CAF50", cursor: "pointer", width: "50%",fontSize:"12px" }}
+                      <TableCell
+                        sx={{ color: "#4CAF50", cursor: "pointer", width: "50%", fontSize: "12px" }}
                         onClick={() => setSortColumn("rank")}
                       >
-                      Rank  <SortIcon />
+                        Rank <SortIcon />
+                      </TableCell>
+                      <TableCell sx={{ color: "#4CAF50", cursor: "pointer", width: "50%", fontSize: "12px" }}>
+                        Miner <SortIcon />
                       </TableCell>
                       <TableCell
-                        sx={{ color: "#4CAF50", cursor: "pointer", width: "50%",fontSize:"12px" }}
-                      >
-                      Miner   <SortIcon />
-                      </TableCell>
-                      <TableCell
-                        sx={{ color: "#4CAF50", cursor: "pointer", width: "50%",fontSize:"12px" }}
+                        sx={{ color: "#4CAF50", cursor: "pointer", width: "50%", fontSize: "12px" }}
                         onClick={() => setSortColumn("train_loss")}
                       >
-                      Train Loss<SortIcon />
+                        Train Loss<SortIcon />
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -327,10 +339,10 @@ const Dashboard = () => {
                           "&:hover": { backgroundColor: "#383838" },
                         }}
                       >
-                      <TableCell sx={{ color: "#FFFFFF" ,fontSize:"12px"}}>
+                        <TableCell sx={{ color: "#FFFFFF", fontSize: "12px" }}>
                           {entry.rank || 0}
                         </TableCell>
-                        <TableCell sx={{ color: "#FFFFFF" ,fontSize:"12px"}}>
+                        <TableCell sx={{ color: "#FFFFFF", fontSize: "12px" }}>
                           {entry.miner || 0}
                         </TableCell>
                         <TableCell
@@ -340,12 +352,11 @@ const Dashboard = () => {
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
-                            fontSize:"12px"
+                            fontSize: "12px",
                           }}
                         >
                           {entry.train_loss || "N/A"}
                         </TableCell>
-                       
                       </TableRow>
                     ))}
                   </TableBody>
