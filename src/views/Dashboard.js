@@ -300,17 +300,22 @@ const Dashboard = () => {
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
+                    <TableCell
+                        sx={{ color: "#4CAF50", cursor: "pointer", width: "50%",fontSize:"12px" }}
+                        onClick={() => setSortColumn("rank")}
+                      >
+                      Rank  <SortIcon />
+                      </TableCell>
+                      <TableCell
+                        sx={{ color: "#4CAF50", cursor: "pointer", width: "50%",fontSize:"12px" }}
+                      >
+                      Miner   <SortIcon />
+                      </TableCell>
                       <TableCell
                         sx={{ color: "#4CAF50", cursor: "pointer", width: "50%",fontSize:"12px" }}
                         onClick={() => setSortColumn("train_loss")}
                       >
-                        Train Loss <SortIcon />
-                      </TableCell>
-                      <TableCell
-                        sx={{ color: "#4CAF50", cursor: "pointer", width: "50%",fontSize:"12px" }}
-                        onClick={() => setSortColumn("steps_completed")}
-                      >
-                        Steps <SortIcon />
+                      Train Loss<SortIcon />
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -322,6 +327,12 @@ const Dashboard = () => {
                           "&:hover": { backgroundColor: "#383838" },
                         }}
                       >
+                      <TableCell sx={{ color: "#FFFFFF" ,fontSize:"12px"}}>
+                          {entry.rank || 0}
+                        </TableCell>
+                        <TableCell sx={{ color: "#FFFFFF" ,fontSize:"12px"}}>
+                          {entry.miner || 0}
+                        </TableCell>
                         <TableCell
                           sx={{
                             color: "#FFFFFF",
@@ -334,9 +345,7 @@ const Dashboard = () => {
                         >
                           {entry.train_loss || "N/A"}
                         </TableCell>
-                        <TableCell sx={{ color: "#FFFFFF" ,fontSize:"12px"}}>
-                          {entry.steps_completed || 0}
-                        </TableCell>
+                       
                       </TableRow>
                     ))}
                   </TableBody>
