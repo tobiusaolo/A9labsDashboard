@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/A9labsDashboard/static/css/main.e6c13ad2.css",
-    "main.js": "/A9labsDashboard/static/js/main.e7ee8762.js",
+    "main.js": "/A9labsDashboard/static/js/main.c9fdcbbd.js",
     "static/js/453.264fc6ce.chunk.js": "/A9labsDashboard/static/js/453.264fc6ce.chunk.js",
     "static/media/logo.png": "/A9labsDashboard/static/media/logo.3e66ab44b1e40b534920.png",
     "index.html": "/A9labsDashboard/index.html",
     "main.e6c13ad2.css.map": "/A9labsDashboard/static/css/main.e6c13ad2.css.map",
-    "main.e7ee8762.js.map": "/A9labsDashboard/static/js/main.e7ee8762.js.map",
+    "main.c9fdcbbd.js.map": "/A9labsDashboard/static/js/main.c9fdcbbd.js.map",
     "453.264fc6ce.chunk.js.map": "/A9labsDashboard/static/js/453.264fc6ce.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.e7ee8762.js"
+    "static/js/main.c9fdcbbd.js"
   ]
 }
