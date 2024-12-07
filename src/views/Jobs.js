@@ -1,4 +1,4 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import {
   Typography,
   Box,
@@ -17,6 +17,8 @@ import {
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Filter9Icon from "@mui/icons-material/Filter9";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
+
+const POLLING_INTERVAL = 30000; // Poll every 30 seconds
 
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -45,31 +47,31 @@ const Jobs = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!formData.userId || !formData.title || !formData.description || !formData.dataset) {
       alert("Please fill in all required fields.");
       return;
     }
-  
+
     setIsSubmitting(true);
     setProgress(0);
-  
+
     const formDataToSend = new FormData();
     formDataToSend.append("user_id", formData.userId);
     formDataToSend.append("title", formData.title);
     formDataToSend.append("description", formData.description);
     formDataToSend.append("file", formData.dataset);
-  
+
     try {
       const response = await fetch("https://a9labsapi-13747549899.us-central1.run.app/jobs/create", {
         method: "POST",
         body: formDataToSend,
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to create job.");
       }
-  
+
       const data = await response.json();
       alert(`Job created successfully! Job ID: ${data.job_id}`);
       setOpenModal(false);
@@ -82,33 +84,30 @@ const Jobs = () => {
   };
 
   useEffect(() => {
-    const ws = new WebSocket("wss://a9labsapi-1048667232204.us-central1.run.app/ws/jobs/open");
-
-    ws.onopen = () => {
-      setIsConnected(true);
-      console.log("WebSocket connected");
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.open_jobs) {
-        setJobs(data.open_jobs);
+    const fetchJobs = async () => {
+      try {
+        const response = await fetch("https://a9labsapi-13747549899.us-central1.run.app/jobs/open",{method: "POST"});
+        if (!response.ok) {
+          throw new Error("Failed to fetch jobs.");
+        }
+        const data = await response.json();
+        if (data.open_jobs) {
+          setJobs(data.open_jobs);
+          setIsConnected(true);
+        }
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+        setIsConnected(false);
       }
     };
 
-    ws.onclose = () => {
-      setIsConnected(false);
-      console.log("WebSocket disconnected");
-    };
+    // Initial fetch
+    fetchJobs();
 
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
+    // Polling for updates
+    const interval = setInterval(fetchJobs, POLLING_INTERVAL);
 
-    // Clean up the WebSocket connection
-    return () => {
-      ws.close();
-    };
+    return () => clearInterval(interval); // Cleanup on component unmount
   }, []);
 
   const handleCopyToClipboard = (job) => {
@@ -116,6 +115,7 @@ const Jobs = () => {
     navigator.clipboard.writeText(text);
     alert(`Copied to clipboard: ${text}`);
   };
+
   return (
     <Box sx={{ width: "100%", padding: "16px", color: "#FFFFFF", mt: 10 }}>
       {/* Introduction Section */}
@@ -178,14 +178,14 @@ const Jobs = () => {
             variant="body2"
             sx={{ color: "#B0BEC5", textAlign: "center" }}
           >
-            
+            Connected: Receiving real-time updates.
           </Typography>
         ) : (
           <Typography
             variant="body2"
             sx={{ color: "red", textAlign: "center" }}
           >
-            WebSocket disconnected. Trying to reconnect...
+            Disconnected: Trying to reconnect...
           </Typography>
         )}
       </Paper>
@@ -233,7 +233,7 @@ const Jobs = () => {
                     alignItems="center"
                     mb={2}
                   >
-                    <Typography variant="h6" sx={{ fontWeight: "bold" ,fontSize:18}}>
+                    <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: 18 }}>
                       Job: {job.job_id}
                     </Typography>
                     <Filter9Icon sx={{ color: "#FFFFF", fontSize: 32 }} />
@@ -326,128 +326,127 @@ const Jobs = () => {
 
       {/* Modal for Creating a Training Job */}
       <Modal
-          open={openModal}
-          onClose={handleCloseModal}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-          }}
-        >
-          <Fade in={openModal}>
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 400,
-                bgcolor: "#2E2E2E",
-                borderRadius: 3,
-                boxShadow: 24,
-                p: 4,
-              }}
-            >
-              <Typography variant="h6" sx={{ mb: 2, color: "#FFFFFF" }}>
-                Create Training Job
+        open={openModal}
+        onClose={handleCloseModal}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+      >
+        <Fade in={openModal}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 400,
+              bgcolor: "#2E2E2E",
+              borderRadius: 3,
+              boxShadow: 24,
+              p: 4,
+            }}
+          >
+            <Typography variant="h6" sx={{ mb: 2, color: "#FFFFFF" }}>
+              Create Training Job
+            </Typography>
+            <form onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                required
+                label="User ID"
+                name="userId"
+                value={formData.userId}
+                onChange={handleChange}
+                sx={{ mb: 2 }}
+                InputProps={{
+                  style: { color: "#FFFFFF" },
+                }}
+              />
+              <TextField
+                fullWidth
+                required
+                label="Title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                sx={{ mb: 2 }}
+                InputProps={{
+                  style: { color: "#FFFFFF" },
+                }}
+              />
+              <TextField
+                fullWidth
+                required
+                label="Description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                multiline
+                rows={4}
+                sx={{ mb: 2 }}
+                InputProps={{
+                  style: { color: "#FFFFFF" },
+                }}
+              />
+              <Button
+                variant="contained"
+                component="label"
+                sx={{
+                  mb: 2,
+                  backgroundColor: "#1565C0",
+                  color: "#FFFFFF",
+                  "&:hover": { backgroundColor: "#003C8F" },
+                }}
+              >
+                <FileUploadIcon sx={{ mr: 1 }} />
+                Upload Dataset (CSV)
+                <input
+                  type="file"
+                  hidden
+                  name="dataset"
+                  accept=".csv"
+                  onChange={handleChange}
+                />
+              </Button>
+              <Typography
+                variant="body2"
+                sx={{ color: "#B0BEC5", fontStyle: "italic", mb: 2 }}
+              >
+                Hint: The dataset should be a CSV file with "instructions" and
+                "response" columns.
               </Typography>
-              <form onSubmit={handleSubmit}>
-                <TextField
-                  fullWidth
-                  required
-                  label="User ID"
-                  name="userId"
-                  value={formData.userId}
-                  onChange={handleChange}
-                  sx={{ mb: 2 }}
-                  InputProps={{
-                    style: { color: "#FFFFFF" },
-                  }}
-                />
-                <TextField
-                  fullWidth
-                  required
-                  label="Title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  sx={{ mb: 2 }}
-                  InputProps={{
-                    style: { color: "#FFFFFF" },
-                  }}
-                />
-                <TextField
-                  fullWidth
-                  required
-                  label="Description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  multiline
-                  rows={4}
-                  sx={{ mb: 2 }}
-                  InputProps={{
-                    style: { color: "#FFFFFF" },
-                  }}
-                />
-                <Button
-                  variant="contained"
-                  component="label"
-                  sx={{
-                    mb: 2,
-                    backgroundColor: "#1565C0",
-                    color: "#FFFFFF",
-                    "&:hover": { backgroundColor: "#003C8F" },
-                  }}
-                >
-                  <FileUploadIcon sx={{ mr: 1 }} />
-                  Upload Dataset (CSV)
-                  <input
-                    type="file"
-                    hidden
-                    name="dataset"
-                    accept=".csv"
-                    onChange={handleChange}
-                  />
-                </Button>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "#B0BEC5", fontStyle: "italic", mb: 2 }}
-                >
-                  Hint: The dataset should be a CSV file with "instructions" and
-                  "response" columns.
-                </Typography>
 
-                {isSubmitting ? (
-                  <Box sx={{ textAlign: "center", mb: 2 }}>
-                    <CircularProgress size={24} />
-                    <Typography variant="body2" sx={{ color: "#B0BEC5", mt: 1 }}>
-                      Submitting job...
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    sx={{
-                      backgroundColor: "#4CAF50",
-                      color: "#FFFFFF",
-                      "&:hover": {
-                        backgroundColor: "#388E3C",
-                      },
-                    }}
-                  >
-                    Submit Job
-                  </Button>
-                )}
-              </form>
-            </Box>
-          </Fade>
-        </Modal>
-  </Box>
-);
+              {isSubmitting ? (
+                <Box sx={{ textAlign: "center", mb: 2 }}>
+                  <CircularProgress size={24} />
+                  <Typography variant="body2" sx={{ color: "#B0BEC5", mt: 1 }}>
+                    Submitting job...
+                  </Typography>
+                </Box>
+              ) : (
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#4CAF50",
+                    color: "#FFFFFF",
+                    "&:hover": {
+                      backgroundColor: "#388E3C",
+                    },
+                  }}
+                >
+                  Submit Job
+                </Button>
+              )}
+            </form>
+          </Box>
+        </Fade>
+      </Modal>
+    </Box>
+  );
 };
 
 export default Jobs;
-
